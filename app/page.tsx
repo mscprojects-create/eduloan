@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmiCalculator } from "@/components/emi-calculator";
+import { RoleCards } from "@/components/role-cards";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -16,7 +17,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:py-24">
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:py-20">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-zinc-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -27,7 +28,7 @@ export default function Home() {
           </h1>
           <p className="mt-5 max-w-md text-zinc-400">
             Apply for an educational loan, upload documents, and track every step
-            in real time. A single portal for students and loan officers.
+            in real time. A single portal for students, loan officers, and investors.
           </p>
           <div className="mt-8 flex gap-3">
             <Link href="/register"><Button className="px-6">Apply now</Button></Link>
@@ -41,6 +42,8 @@ export default function Home() {
         </div>
         <EmiCalculator />
       </section>
+
+      <RoleCards />
 
       <footer className="mx-auto max-w-6xl px-6 py-10 text-center text-xs text-zinc-600">
         EduLoan is a demonstration project. No real money, accounts, or financial
