@@ -2,16 +2,16 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/navbar";
 
-export default async function StudentLayout({ children }: { children: React.ReactNode }) {
+export default async function InvestorLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
   if (profile?.role === "admin") redirect("/admin");
-  if (profile?.role === "investor") redirect("/investor");
+  if (profile?.role !== "investor") redirect("/student");
   return (
     <div className="min-h-screen">
-      <Navbar name={profile?.full_name ?? user.email!} role="student" />
+      <Navbar name={profile?.full_name ?? user.email!} role="investor" />
       <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
     </div>
   );

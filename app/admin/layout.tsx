@@ -6,10 +6,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data: profile } = await supabase
-    .from("profiles").select("full_name, role").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
+  if (profile?.role === "investor") redirect("/investor");
   if (profile?.role !== "admin") redirect("/student");
-
   return (
     <div className="min-h-screen">
       <Navbar name={profile?.full_name ?? user.email!} role="admin" />
