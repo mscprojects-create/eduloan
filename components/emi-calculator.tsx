@@ -1,56 +1,31 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { calculateEMI, totalPayable } from "@/lib/emi";
+import { calculateEMI, totalPayable, buildSchedule } from "@/lib/emi";
 import { formatINR } from "@/lib/utils";
 import { ANNUAL_INTEREST_RATE } from "@/lib/constants";
 
-export function EmiCalculator() {
+export function EmiCalculator({ showScheduleByDefault = false }: { showScheduleByDefault?: boolean }) {
   const [principal, setPrincipal] = useState(100000);
   const [rate, setRate] = useState(ANNUAL_INTEREST_RATE);
   const [months, setMonths] = useState(60);
+  const [showSchedule, setShowSchedule] = useState(showScheduleByDefault);
 
-  const { emi, total, interest } = useMemo(() => {
+  const { emi, total, interest, schedule } = useMemo(() => {
     const e = calculateEMI(principal, rate, months);
     const t = totalPayable(principal, rate, months);
-    return { emi: e, total: t, interest: t - principal };
+    return { emi: e, total: t, interest: t - principal, schedule: buildSchedule(principal, rate, months) };
   }, [principal, rate, months]);
 
   return (
     <div className="glass rounded-2xl p-6 sm:p-8">
       <h3 className="text-lg font-semibold text-zinc-100">EMI Calculator</h3>
-      <p className="mt-1 text-sm text-zinc-500">
-        Estimate your monthly repayment instantly.
-      </p>
+      <p className="mt-1 text-sm text-zinc-500">Estimate your monthly repayment instantly.</p>
 
       <div className="mt-6 space-y-6">
-        <Slider
-          label="Loan amount"
-          value={principal}
-          min={10000}
-          max={150000}
-          step={1000}
-          display={formatINR(principal)}
-          onChange={setPrincipal}
-        />
-        <Slider
-          label="Interest rate (p.a.)"
-          value={rate}
-          min={6}
-          max={16}
-          step={0.25}
-          display={`${rate.toFixed(2)}%`}
-          onChange={setRate}
-        />
-        <Slider
-          label="Tenure"
-          value={months}
-          min={12}
-          max={120}
-          step={6}
-          display={`${months} months`}
-          onChange={setMonths}
-        />
+        <Slider label="Loan amount" value={principal} min={10000} max={150000} step={1000} display={formatINR(principal)} onChange={setPrincipal} />
+        <Slider label="Interest rate (p.a.)" value={rate} min={6} max={16} step={0.25} display={`${rate.toFixed(2)}%`} onChange={setRate} />
+        <Slider label="Tenure" value={months} min={12} max={120} step={6} display={`${months} months`} onChange={setMonths} />
       </div>
 
       <div className="mt-7 grid grid-cols-3 gap-3 text-center">
@@ -58,15 +33,46 @@ export function EmiCalculator() {
         <Stat label="Total interest" value={formatINR(interest)} />
         <Stat label="Total payable" value={formatINR(total)} />
       </div>
+
+      <button
+        onClick={() => setShowSchedule((s) => !s)}
+        className="mt-5 w-full rounded-lg border border-white/10 bg-white/[0.02] py-2.5 text-sm text-zinc-300 transition-colors hover:bg-white/5"
+      >
+        {showSchedule ? "Hide amortization schedule ▲" : "View amortization schedule ▼"}
+      </button>
+
+      {showSchedule && (
+        <div className="mt-4 max-h-80 overflow-auto rounded-xl border border-white/10">
+          <table className="w-full text-left text-xs">
+            <thead className="sticky top-0 bg-panel text-zinc-500">
+              <tr className="border-b border-white/10">
+                <th className="px-3 py-2 font-medium">#</th>
+                <th className="px-3 py-2 font-medium">EMI</th>
+                <th className="px-3 py-2 font-medium">Principal</th>
+                <th className="px-3 py-2 font-medium">Interest</th>
+                <th className="px-3 py-2 font-medium">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schedule.map((r) => (
+                <tr key={r.month} className="border-b border-white/5">
+                  <td className="px-3 py-1.5 text-zinc-500">{r.month}</td>
+                  <td className="px-3 py-1.5">{formatINR(r.emi)}</td>
+                  <td className="px-3 py-1.5 text-emerald-300/80">{formatINR(r.principal)}</td>
+                  <td className="px-3 py-1.5 text-amber-300/80">{formatINR(r.interest)}</td>
+                  <td className="px-3 py-1.5 text-zinc-300">{formatINR(r.balance)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-function Slider({
-  label, value, min, max, step, display, onChange,
-}: {
-  label: string; value: number; min: number; max: number; step: number;
-  display: string; onChange: (n: number) => void;
+function Slider({ label, value, min, max, step, display, onChange }: {
+  label: string; value: number; min: number; max: number; step: number; display: string; onChange: (n: number) => void;
 }) {
   return (
     <div>
@@ -74,12 +80,9 @@ function Slider({
         <span className="text-sm text-zinc-400">{label}</span>
         <span className="text-sm font-medium text-zinc-100">{display}</span>
       </div>
-      <input
-        type="range"
-        min={min} max={max} step={step} value={value}
+      <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-accent"
-      />
+        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-accent" />
     </div>
   );
 }
